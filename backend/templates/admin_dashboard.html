@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AI Mock Interview Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .admin-info {
+            background: #3498db;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        
+        .metric-description {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .status-excellent {
+            color: #27ae60;
+        }
+        
+        .status-good {
+            color: #3498db;
+        }
+        
+        .status-warning {
+            color: #f39c12;
+        }
+        
+        .highlights-section {
+            background: #f8f9fa;
+            padding: 30px;
+            margin: 20px;
+            border-radius: 10px;
+        }
+        
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .highlight-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .highlight-card h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .highlight-list {
+            list-style: none;
+        }
+        
+        .highlight-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .highlight-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .refresh-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 20px;
+            transition: background 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: #2980b9;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>🎯 Admin Dashboard</h1>
+            <p>AI Mock Interview Platform - System Performance Metrics</p>
+        </div>
+        
+        <div class="admin-info">
+            <div>
+                <strong>Administrator:</strong> <span id="admin-name">Loading...</span>
+                <br>
+                <strong>Email:</strong> <span id="admin-email">Loading...</span>
+            </div>
+            <div>
+                <strong>Access Level:</strong> Full System Metrics
+                <br>
+                <strong>Status:</strong> <span class="status-excellent">Active</span>
+            </div>
+        </div>
+        
+        <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Metrics</button>
+        
+        <div id="loading" class="loading">
+            Loading dashboard metrics...
+        </div>
+        
+        <div id="error" class="error" style="display: none;">
+            Error loading dashboard. Please check your admin credentials.
+        </div>
+        
+        <div id="dashboard-content" style="display: none;">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>📊 Answer Validation Accuracy</h3>
+                    <div class="metric-value" id="validation-accuracy">--</div>
+                    <div class="metric-description">System accuracy in identifying valid vs invalid answers</div>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>🎯 Scoring Consistency</h3>
+                    <div class="metric-value" id="scoring-consistency">--</div>
+                    <div class="metric-description">Consistency of scoring across multiple evaluations</div>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>⚡ API Reliability</h3>
+                    <div class="metric-value" id="api-reliability">--</div>
+                    <div class="metric-description">Groq AI API success rate and performance</div>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>👥 User Completion Rate</h3>
+                    <div class="metric-value" id="completion-rate">--</div>
+                    <div class="metric-description">Percentage of users completing full interviews</div>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>🎪 Total Sessions</h3>
+                    <div class="metric-value" id="total-sessions">--</div>
+                    <div class="metric-description">Total interview sessions conducted</div>
+                </div>
+                
+                <div class="metric-card">
+                    <h3>🏆 System Health</h3>
+                    <div class="metric-value status-excellent" id="system-health">--</div>
+                    <div class="metric-description">Overall system performance rating</div>
+                </div>
+            </div>
+            
+            <div class="highlights-section">
+                <h2>📈 System Highlights</h2>
+                <div class="highlights-grid">
+                    <div class="highlight-card">
+                        <h4>🔧 Technical Excellence</h4>
+                        <ul class="highlight-list" id="technical-highlights">
+                            <!-- Will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                    
+                    <div class="highlight-card">
+                        <h4>💼 Business Value</h4>
+                        <ul class="highlight-list" id="business-value">
+                            <!-- Will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timestamp" id="last-updated">
+            Last updated: --
+        </div>
+    </div>
+
+    <script>
+        let ADMIN_TOKEN = localStorage.getItem('admin_token');
+        
+        // Login function
+        async function adminLogin() {
+            const email = prompt('Enter admin email:', 'saikrishnavankayala9@gmail.com');
+            const password = prompt('Enter admin password:');
+            
+            if (!email || !password) return false;
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    ADMIN_TOKEN = data.token;
+                    localStorage.setItem('admin_token', ADMIN_TOKEN);
+                    alert('Admin login successful!');
+                    return true;
+                } else {
+                    const error = await response.json();
+                    alert('Login failed: ' + error.error);
+                    return false;
+                }
+            } catch (error) {
+                alert('Login error: ' + error.message);
+                return false;
+            }
+        }
+        
+        async function loadDashboard() {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error');
+            const contentEl = document.getElementById('dashboard-content');
+            
+            // Check if we have a token, if not, try to login
+            if (!ADMIN_TOKEN) {
+                const loginSuccess = await adminLogin();
+                if (!loginSuccess) {
+                    errorEl.style.display = 'block';
+                    errorEl.textContent = 'Admin authentication required';
+                    loadingEl.style.display = 'none';
+                    return;
+                }
+            }
+            
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            contentEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/admin/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Token expired or invalid, try to login again
+                        localStorage.removeItem('admin_token');
+                        ADMIN_TOKEN = null;
+                        const loginSuccess = await adminLogin();
+                        if (loginSuccess) {
+                            // Retry the request with new token
+                            return loadDashboard();
+                        }
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update admin info
+                document.getElementById('admin-name').textContent = data.admin_info.admin_name;
+                document.getElementById('admin-email').textContent = data.admin_info.admin_email;
+                
+                // Update key metrics
+                document.getElementById('validation-accuracy').textContent = data.key_metrics.answer_validation_accuracy;
+                document.getElementById('scoring-consistency').textContent = data.key_metrics.scoring_consistency;
+                document.getElementById('api-reliability').textContent = data.key_metrics.api_reliability;
+                document.getElementById('completion-rate').textContent = data.key_metrics.user_completion_rate;
+                document.getElementById('total-sessions').textContent = data.key_metrics.total_interview_sessions;
+                document.getElementById('system-health').textContent = data.key_metrics.system_health_score;
+                
+                // Update highlights
+                const technicalList = document.getElementById('technical-highlights');
+                const businessList = document.getElementById('business-value');
+                
+                technicalList.innerHTML = '';
+                businessList.innerHTML = '';
+                
+                data.detailed_analysis.technical_highlights.forEach(highlight => {
+                    const li = document.createElement('li');
+                    li.textContent = highlight;
+                    technicalList.appendChild(li);
+                });
+                
+                data.detailed_analysis.business_value.forEach(value => {
+                    const li = document.createElement('li');
+                    li.textContent = value;
+                    businessList.appendChild(li);
+                });
+                
+                // Update timestamp
+                document.getElementById('last-updated').textContent = 
+                    `Last updated: ${new Date(data.admin_info.last_updated).toLocaleString()}`;
+                
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                errorEl.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+        
+        // Load dashboard on page load
+        window.addEventListener('load', loadDashboard);
+        
+        // Add login button
+        document.addEventListener('DOMContentLoaded', function() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            const loginBtn = document.createElement('button');
+            loginBtn.className = 'refresh-btn';
+            loginBtn.textContent = '🔐 Admin Login';
+            loginBtn.onclick = async function() {
+                const success = await adminLogin();
+                if (success) {
+                    loadDashboard();
+                }
+            };
+            refreshBtn.parentNode.insertBefore(loginBtn, refreshBtn);
+        });
+    </script>
+</body>
+</html>

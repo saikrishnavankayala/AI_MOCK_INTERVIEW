@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Interview - Webcam Recording</title>
+    <style>
+        #camera-container { position: relative; width: 640px; margin: 0 auto; }
+        #video { border: 1px solid #ccc; background: #000; }
+        #emotion-display { position: absolute; top: 10px; left: 10px; 
+                          background: rgba(0,0,0,0.5); color: white; padding: 5px; }
+        #controls { text-align: center; margin: 20px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 0 10px; }
+    </style>
+</head>
+<body>
+    <h1>AI Interview</h1>
+    <div id="question-container">
+        <h2 id="question-text">Question will appear here</h2>
+    </div>
+    
+    <div id="camera-container">
+        <video id="video" width="640" height="480" autoplay></video>
+        <div id="emotion-display">Emotion: Neutral</div>
+    </div>
+    
+    <div id="controls">
+        <button id="start-btn">Start Recording</button>
+        <button id="stop-btn" disabled>Stop Recording</button>
+    </div>
+    
+    <script>
+        // Global variables
+        let mediaRecorder;
+        let recordedChunks = [];
+        let emotionInterval;
+        let question = "Tell me about yourself";
+
+        // DOM elements
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const emotionDisplay = document.getElementById('emotion-display');
+        const questionText = document.getElementById('question-text');
+
+        // Initialize
+        questionText.textContent = question;
+        
+        // Get webcam access
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                video.srcObject = stream;
+                
+                // Initialize emotion detection
+                detectEmotions();
+            } catch (err) {
+                console.error("Error accessing webcam:", err);
+            }
+        }
+        
+        // Start recording
+        startBtn.onclick = () => {
+            recordedChunks = [];
+            const stream = video.srcObject;
+            mediaRecorder = new MediaRecorder(stream);
+            
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            
+            mediaRecorder.onstop = uploadRecording;
+            mediaRecorder.start();
+            
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        };
+        
+        // Stop recording
+        stopBtn.onclick = () => {
+            mediaRecorder.stop();
+            clearInterval(emotionInterval);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        };
+        
+        // Upload to server
+        function uploadRecording() {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const formData = new FormData();
+            formData.append('file', blob, 'interview.webm');
+            formData.append('question', question);
+            
+            fetch('/api/record-video-answer', {
+                method: 'POST',
+                headers: {
+                    'Authorization': localStorage.getItem('token') || ''
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Feedback received:", data);
+                alert("Feedback generated! Check your dashboard.");
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+        // Facial expression detection (simplified)
+        function detectEmotions() {
+            emotionInterval = setInterval(() => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // In a real app, we'd send this to an API for analysis
+                // For demo, we'll simulate changing emotions
+                const emotions = ['Neutral', 'Happy', 'Surprise', 'Sad', 'Angry'];
+                const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+                emotionDisplay.textContent = `Emotion: ${randomEmotion}`;
+            }, 1000);
+        }
+        
+        // Initialize camera on load
+        window.onload = initCamera;
+    </script>
+</body>
+</html>
