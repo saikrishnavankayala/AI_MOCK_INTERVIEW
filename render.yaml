@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ai-mock-interview-backend
+    env: python
+    plan: free
+    autoDeploy: true
+    
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT
+
+    # Set working directory at repo root; app imports from `backend/`
+    # If you prefer, you can set: workDir: backend
+    # and then adjust commands accordingly.
+
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: GROQ_API_KEY
+        # Add this securely in Render dashboard (not committed).
+        sync: false
+
+# Note: The SQLite DB `interview_app.db` is created on the ephemeral filesystem.
+# For persistence, add a Render Disk and update `backend/db.py` to use a path on the disk.
